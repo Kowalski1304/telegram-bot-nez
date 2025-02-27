@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ExpenseBotController;
+use App\Services\GoogleService;
+use App\Services\OpenAiService;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+//Route::post('/webhook', [ExpenseBotController::class, 'handleMessage']);
+Route::post('/webhook', [ExpenseBotController::class, 'webhook']);
+Route::get('/test', [GoogleService::class, 'createCustomSheet']);
+Route::post('/analyze', [OpenAiService::class, 'analyze']);
+Route::get('/test/add', [GoogleService::class, 'addExpenseToSheet']);
+Route::get('/start', [ExpenseBotController::class, 'start']);
+Route::get('/updateTelegramWebhook', [ExpenseBotController::class, 'updateTelegramWebhook']);
