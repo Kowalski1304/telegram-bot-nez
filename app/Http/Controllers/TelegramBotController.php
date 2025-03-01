@@ -100,7 +100,7 @@ class ExpenseBotController extends Controller
         }
 
         if (isset($message->photo)) {
-            $photoPath = $this->downloadPhoto($message);
+            $photoPath = $this->downloadTelegramMedia($message);
 
             $text = (new TesseractOCR($photoPath))
                 ->lang('ukr')
@@ -110,21 +110,38 @@ class ExpenseBotController extends Controller
         }
 
         if (isset($message->voice)) {
-            // Функціонал обробки голосових повідомлень в розробці
-            //            return $this->analyzeVoiceMessage($request);
-            return response()->json(['error' => 'В розробці'], 400);
+
+            $audioPatch = $this->downloadTelegramMedia($message);
+
+            $text = $this->openAiService->analyzeAudio($audioPatch);
+
+            return $this->openAiService->analyzeText($text);
         }
 
         return response()->json(['error' => 'Немає даних для аналізу'], 400);
     }
 
-    protected function downloadPhoto($message)
+    protected function downloadTelegramMedia($message)
     {
-        $photoSizes = $message['photo'];
-        $highestQuality = end($photoSizes);
-        $fileId = $highestQuality['file_id'];
-
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
+        $fileId = null;
+        $mediaType = null;
+        $storageFolder = null;
+
+        if (isset($message['photo'])) {
+            $photoSizes = $message['photo'];
+            $highestQuality = end($photoSizes);
+            $fileId = $highestQuality['file_id'];
+            $mediaType = 'photo';
+            $storageFolder = 'photos';
+        } elseif (isset($message['voice'])) {
+            $fileId = $message['voice']['file_id'];
+            $mediaType = 'voice';
+            $storageFolder = 'voices';
+        } else {
+            return false;
+        }
+
         $file = $telegram->getFile(['file_id' => $fileId]);
         $filePath = $file->getFilePath();
 
@@ -132,16 +149,21 @@ class ExpenseBotController extends Controller
         $client = new Client(['timeout' => 10.0]);
 
         try {
-            $client->get($downloadUrl);
+            $response = $client->get($downloadUrl);
         } catch (\Exception $e) {
-            \Log::error('Download error: ' . $e->getMessage());
+            \Log::error("Download error for {$mediaType}: " . $e->getMessage());
             return false;
         }
 
         $contents = file_get_contents($downloadUrl);
 
+        $storagePath = storage_path("app/{$storageFolder}");
+        if (!file_exists($storagePath)) {
+            mkdir($storagePath, 0755, true);
+        }
+
         $localFileName = basename($filePath);
-        $localPath = storage_path("app/photos/{$localFileName}");
+        $localPath = "{$storagePath}/{$localFileName}";
         file_put_contents($localPath, $contents);
 
         return $localPath;
