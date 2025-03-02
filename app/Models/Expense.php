@@ -13,6 +13,8 @@ class Expense extends Model
         'user_id',
         'amount',
         'source',
+        'category',
+        'description',
     ];
     public $timestamps = false;
 

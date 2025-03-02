@@ -13,6 +13,8 @@ class CreateExpenses extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->decimal('amount', 8, 2);
             $table->string('source');
+            $table->string('category')->nullable();
+            $table->text('description')->nullable();
             $table->timestamp('created_at')->useCurrent();
         });
     }

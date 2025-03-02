@@ -1,9 +1,7 @@
 <?php
 
+use App\Http\Controllers\TelegramBotController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ExpenseBotController;
-use App\Services\GoogleService;
-use App\Services\OpenAiService;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,10 +14,5 @@ use App\Services\OpenAiService;
 |
 */
 
-//Route::post('/webhook', [ExpenseBotController::class, 'handleMessage']);
-Route::post('/webhook', [ExpenseBotController::class, 'webhook']);
-Route::get('/test', [GoogleService::class, 'createCustomSheet']);
-Route::post('/analyze', [OpenAiService::class, 'analyze']);
-Route::get('/test/add', [GoogleService::class, 'addExpenseToSheet']);
-Route::get('/start', [ExpenseBotController::class, 'start']);
-Route::get('/updateTelegramWebhook', [ExpenseBotController::class, 'updateTelegramWebhook']);
+Route::post('/webhook', [TelegramBotController::class, 'webhook']);
+Route::get('/updateTelegramWebhook', [TelegramBotController::class, 'updateTelegramWebhook']);
