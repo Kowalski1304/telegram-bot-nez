@@ -7,8 +7,7 @@ use Carbon\Carbon;
 
 class ExpenseService
 {
-
-    public function storeExpense(int $userId, float $amount, string $source, ?string $category = null, ?string $description = null)
+    public function storeExpense(int $userId, float $amount, string $source, ?string $category = null, ?string $description = null): Expense
     {
         return Expense::create([
             'user_id' => $userId,
@@ -20,7 +19,7 @@ class ExpenseService
         ]);
     }
 
-    public function getRecentExpenses(int $userId, int $limit = 5)
+    public function getRecentExpenses(int $userId, int $limit = 5): Expense
     {
         return Expense::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
@@ -28,7 +27,7 @@ class ExpenseService
             ->get();
     }
 
-    public function getTotalForPeriod(int $userId, Carbon $startDate, Carbon $endDate)
+    public function getTotalForPeriod(int $userId, Carbon $startDate, Carbon $endDate): Expense
     {
         return Expense::where('user_id', $userId)
             ->whereBetween('created_at', [$startDate, $endDate])

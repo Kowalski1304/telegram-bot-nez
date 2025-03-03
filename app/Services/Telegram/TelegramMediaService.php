@@ -18,14 +18,7 @@ class TelegramMediaService
         $this->client = new Client(['timeout' => 10.0]);
     }
 
-    /**
-     * Завантажує медіа з Telegram (фото або аудіо)
-     *
-     * @param object $message Об'єкт повідомлення Telegram
-     * @param string $type Тип медіа ('photo' або 'voice')
-     * @return string|false Шлях до файлу або false в разі помилки
-     */
-    public function downloadMedia($message, string $type)
+    public function downloadMedia($message, string $type): bool|string
     {
         $fileId = null;
         $storageFolder = null;

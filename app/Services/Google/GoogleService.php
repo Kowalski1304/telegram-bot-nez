@@ -17,7 +17,7 @@ class GoogleService
     protected $client;
     protected $driveService;
 
-    protected function initializeClient($userName = null)
+    protected function initializeClient($userName = null): Google_Client
     {
         $client = new Google_Client();
         $client->setApplicationName("Expense Tracker" . ($userName ? " - $userName" : ""));
@@ -44,7 +44,7 @@ class GoogleService
         return $client;
     }
 
-    public function createCustomSheet(User $user)
+    public function createCustomSheet(User $user): string|\Exception
     {
         try {
             $client = $this->initializeClient($user->name);
@@ -91,7 +91,7 @@ class GoogleService
         }
     }
 
-    protected function initializeSheetHeaders($sheetsService, $spreadsheetId)
+    protected function initializeSheetHeaders($sheetsService, $spreadsheetId): void
     {
         $sheetName = 'Витрати';
         $params = ['valueInputOption' => 'USER_ENTERED'];
@@ -118,7 +118,6 @@ class GoogleService
             $params
         );
 
-        // Додаємо аналітику по категоріям
         $categoryAnalyticsHeader = [
             ['Аналітика по категоріям']
         ];
@@ -142,7 +141,7 @@ class GoogleService
         );
     }
 
-    protected function formatSpreadsheet($sheetsService, $spreadsheetId)
+    protected function formatSpreadsheet($sheetsService, $spreadsheetId): void
     {
         $requests = [];
 
@@ -393,16 +392,7 @@ class GoogleService
         $sheetsService->spreadsheets->batchUpdate($spreadsheetId, $batchUpdateRequest);
     }
 
-    /**
-     * Створює запит для форматування заголовків
-     *
-     * @param int $startRowIndex Початковий індекс рядка
-     * @param int $startColumnIndex Початковий індекс стовпця
-     * @param int $endRowIndex Кінцевий індекс рядка
-     * @param int $endColumnIndex Кінцевий індекс стовпця
-     * @return array Запит на форматування
-     */
-    protected function createHeaderFormatRequest($startRowIndex, $startColumnIndex, $endRowIndex, $endColumnIndex)
+    protected function createHeaderFormatRequest($startRowIndex, $startColumnIndex, $endRowIndex, $endColumnIndex): array
     {
         return [
             'repeatCell' => [
@@ -438,7 +428,7 @@ class GoogleService
         ];
     }
 
-    public function addExpenseToSheet($amount, User $user, $category = null, $description = null)
+    public function addExpenseToSheet($amount, User $user, $category = null, $description = null): array
     {
         try {
             $date = date('Y-m-d');
@@ -483,7 +473,7 @@ class GoogleService
         }
     }
 
-    protected function updateCategoryAnalytics($sheetsService, $spreadsheetId, $category)
+    protected function updateCategoryAnalytics($sheetsService, $spreadsheetId, $category): void
     {
         $sheetName = 'Витрати';
 

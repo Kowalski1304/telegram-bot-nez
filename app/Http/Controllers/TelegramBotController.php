@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\Telegram\TelegramMessageHandler;
+use Illuminate\Http\JsonResponse;
 use Telegram\Bot\Api;
+use Illuminate\Http\Response;
 
 class TelegramBotController extends Controller
 {
@@ -16,7 +18,7 @@ class TelegramBotController extends Controller
         $this->telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
     }
 
-    public function webhook()
+    public function webhook(): Response|JsonResponse
     {
         $update = $this->telegram->getWebhookUpdate();
 
@@ -26,6 +28,8 @@ class TelegramBotController extends Controller
 
             if ($text === '/start') {
                 return $this->messageHandler->handleStart($telegramId, $message);
+            } if ($text === '/link') {
+                return $this->messageHandler->handleLink($telegramId, $message);
             } else {
                 return $this->messageHandler->handleMessage($telegramId, $message);
             }
@@ -34,7 +38,7 @@ class TelegramBotController extends Controller
         return response('ok', 200);
     }
 
-    public function updateTelegramWebhook()
+    public function updateTelegramWebhook(): JsonResponse
     {
         $telegramToken = env('TELEGRAM_BOT_TOKEN');
         $webhookUrl = env('TELEGRAM_WEBHOOK_URL');

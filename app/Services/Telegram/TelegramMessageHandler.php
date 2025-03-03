@@ -38,7 +38,24 @@ class TelegramMessageHandler
             ['name' => $message->from->first_name]
         );
 
-        $this->checkSheetLink($user, true);
+        $this->checkSheetLink($user);
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function handleLink($telegramId, $message): JsonResponse
+    {
+        $user = User::firstOrCreate(
+            ['telegram_id' => $telegramId],
+            ['name' => $message->from->first_name]
+        );
+        if ($user->sheet_link) {
+            $this->telegramClient->sendMessage($user->telegram_id, "Твоя табличка з витратами: $user->sheet_link");
+        }
+
+        if (!$user->sheet_link) {
+            $this->checkSheetLink($user);
+        }
 
         return response()->json(['status' => 'ok']);
     }
@@ -60,6 +77,7 @@ class TelegramMessageHandler
             $user = User::where('telegram_id', $telegramId)->first();
             if (!$user) {
                 $this->handleStart($telegramId, $message);
+                $user = User::where('telegram_id', $telegramId)->first();
             }
 
             $this->checkSheetLink($user);
@@ -77,7 +95,7 @@ class TelegramMessageHandler
         }
     }
 
-    protected function analyze($message, $telegramId)
+    protected function analyze($message, $telegramId): JsonResponse|array
     {
         if (isset($message->text)) {
             return $this->openAiService->analyzeText($message->text, $telegramId);
@@ -102,14 +120,10 @@ class TelegramMessageHandler
         return response()->json(['error' => 'Немає даних для аналізу'], 400);
     }
 
-    protected function checkSheetLink(User $user, bool $sendMessage = null)
+    protected function checkSheetLink(User|null $user): void
     {
-        if (!$user->sheet_link) {
+        if ($user && !$user->sheet_link) {
             $sheetLink = $this->googleService->createCustomSheet($user);
-        }
-
-        if ($sendMessage) {
-            $sheetLink = $sheetLink ?? $user->sheet_link;
             $this->telegramClient->sendMessage($user->telegram_id, "Твоя табличка з витратами: $sheetLink");
         }
     }

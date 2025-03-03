@@ -3,6 +3,7 @@
 namespace App\Services\OpenAi;
 
 use App\Services\Telegram\TelegramClient;
+use Illuminate\Http\JsonResponse;
 use OpenAI;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +21,7 @@ class OpenAiService
     }
 
 
-    public function analyzeText(string $text, $telegramId)
+    public function analyzeText(string $text, $telegramId): JsonResponse|array
     {
         try {
             $prompt = "
@@ -74,7 +75,7 @@ class OpenAiService
         }
     }
 
-    public function analyzeAudio($audioPath)
+    public function analyzeAudio($audioPath): JsonResponse
     {
         try {
             $response = Http::withHeaders([

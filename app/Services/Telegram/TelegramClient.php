@@ -4,6 +4,8 @@ namespace App\Services\Telegram;
 
 use Telegram\Bot\Api;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Objects\Message as MessageObject;
+use Telegram\Bot\Objects\Update as UpdateObject;
 
 class TelegramClient
 {
@@ -14,7 +16,7 @@ class TelegramClient
         $this->telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
     }
 
-    public function sendMessage($chatId, $message, array $options = [])
+    public function sendMessage($chatId, $message, array $options = []): MessageObject|bool
     {
         try {
             $params = array_merge([
@@ -29,12 +31,12 @@ class TelegramClient
         }
     }
 
-    public function getUpdates()
+    public function getUpdates(): array
     {
         return $this->telegram->getUpdates();
     }
 
-    public function getWebhookUpdate()
+    public function getWebhookUpdate(): UpdateObject
     {
         return $this->telegram->getWebhookUpdate();
     }
