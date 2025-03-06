@@ -10,18 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class OpenAiService
 {
-    protected $client;
-    protected $apiKey;
-
-    public function __construct()
+    public function __construct(private readonly OpenAI $client, private readonly TelegramClient $telegramClient)
     {
-        $this->apiKey = env('OPENAI_API_KEY');
-        $this->client = OpenAI::client($this->apiKey);
-        $this->telegramClient = new TelegramClient;
     }
 
 
-    public function analyzeText(string $text, $telegramId): JsonResponse|array
+    public function analyzeText(string $text, int $telegramId): JsonResponse|array
     {
         try {
             $prompt = "
@@ -75,11 +69,11 @@ class OpenAiService
         }
     }
 
-    public function analyzeAudio($audioPath): JsonResponse
+    public function analyzeAudio(string $audioPath): JsonResponse
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer ' . config('open_ai.key'),
             ])->attach(
                 'file',
                 file_get_contents($audioPath),

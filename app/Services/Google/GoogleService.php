@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Log;
 
 class GoogleService
 {
-    protected $client;
-    protected $driveService;
-
     protected function initializeClient($userName = null): Google_Client
     {
         $client = new Google_Client();
@@ -28,7 +25,7 @@ class GoogleService
 
         $credentialsPath = storage_path('app/credentials.json');
         if (!file_exists($credentialsPath)) {
-            throw new \Exception("Файл credentials.json не знайдено.");
+            throw new \Exception("Credentials.json file not found.");
         }
 
         $client->setAuthConfig($credentialsPath);
@@ -36,7 +33,7 @@ class GoogleService
 
         $token = $client->fetchAccessTokenWithAssertion();
         if (isset($token['error'])) {
-            throw new \Exception('Помилка отримання токена: ' . $token['error_description']);
+            throw new \Exception('Error getting token: ' . $token['error_description']);
         }
 
         $client->setAccessToken($token);
