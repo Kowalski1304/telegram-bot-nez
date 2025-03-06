@@ -2,27 +2,19 @@
 
 namespace App\Services\Telegram;
 
-use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Telegram\Bot\Api;
 
 class TelegramMediaService
 {
-    protected $telegram;
-    protected $client;
-
-    public function __construct()
+    public function __construct(private readonly Api $telegram)
     {
-        $this->telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-        $this->client = new Client(['timeout' => 10.0]);
     }
 
     public function downloadMedia($message, string $type): bool|string
     {
-        $fileId = null;
-        $storageFolder = null;
-
         switch ($type) {
             case 'photo':
                 $photoSizes = $message->photo;
@@ -48,8 +40,8 @@ class TelegramMediaService
 
             $downloadUrl = "https://api.telegram.org/file/bot" . env('TELEGRAM_BOT_TOKEN') . "/" . $filePath;
 
-            $response = $this->client->get($downloadUrl);
-            $contents = $response->getBody()->getContents();
+            $response = Http::get($downloadUrl);
+            $contents = $response->body();
 
             $localFileName = basename($filePath);
 

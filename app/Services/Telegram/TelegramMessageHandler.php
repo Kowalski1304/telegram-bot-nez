@@ -2,6 +2,7 @@
 
 namespace App\Services\Telegram;
 
+use App\DTO\ExpenseDTO;
 use App\Models\User;
 use App\Services\Expense\ExpenseService;
 use App\Services\Google\GoogleService;
@@ -11,27 +12,16 @@ use Illuminate\Support\Facades\Log;
 
 class TelegramMessageHandler
 {
-    protected $openAiService;
-    protected $googleService;
-    protected $telegramClient;
-    protected $mediaService;
-    protected $expenseService;
-
     public function __construct(
-        OpenAiService $openAiService,
-        GoogleService $googleService,
-        TelegramClient $telegramClient,
-        TelegramMediaService $mediaService,
-        ExpenseService $expenseService
+        private readonly OpenAiService $openAiService,
+        private readonly GoogleService $googleService,
+        private readonly TelegramClient $telegramClient,
+        private readonly TelegramMediaService $mediaService,
+        private readonly ExpenseService $expenseService
     ) {
-        $this->openAiService = $openAiService;
-        $this->googleService = $googleService;
-        $this->telegramClient = $telegramClient;
-        $this->mediaService = $mediaService;
-        $this->expenseService = $expenseService;
     }
 
-    public function handleStart($telegramId, $message): JsonResponse
+    public function handleStart(int $telegramId, object $message): JsonResponse
     {
         $user = User::firstOrCreate(
             ['telegram_id' => $telegramId],
@@ -43,7 +33,7 @@ class TelegramMessageHandler
         return response()->json(['status' => 'ok']);
     }
 
-    public function handleLink($telegramId, $message): JsonResponse
+    public function handleLink(int $telegramId, object $message): JsonResponse
     {
         $user = User::firstOrCreate(
             ['telegram_id' => $telegramId],
@@ -60,7 +50,7 @@ class TelegramMessageHandler
         return response()->json(['status' => 'ok']);
     }
 
-    public function handleMessage($telegramId, $message): JsonResponse
+    public function handleMessage(int $telegramId, object $message): JsonResponse
     {
         try {
             $data = $this->analyze($message, $telegramId);
@@ -71,7 +61,7 @@ class TelegramMessageHandler
 
             if (is_null($amount)) {
                 $this->telegramClient->sendMessage($telegramId, "Надішли заново. Обробка не успішна.");
-                return response()->json(['error' => 'Amount extraction failed'], 400);
+                return response()->json(['error' => 'Amount extraction failed']);
             }
 
             $user = User::where('telegram_id', $telegramId)->first();
@@ -83,7 +73,15 @@ class TelegramMessageHandler
             $this->checkSheetLink($user);
 
             $this->googleService->addExpenseToSheet($amount, $user, $category, $description);
-            $this->expenseService->storeExpense($user->id, $amount, 'telegram', $category, $description);
+            $expenseDTO = new ExpenseDTO(
+                $user->id,
+                $amount,
+                'telegram',
+                $category,
+                $description
+            );
+
+            $this->expenseService->storeExpense($expenseDTO);
 
             $this->telegramClient->sendMessage($telegramId, "Ти cтав біднішій на: {$amount}");
 
@@ -91,11 +89,11 @@ class TelegramMessageHandler
         } catch (\Exception $e) {
             Log::error('Error handling message: ' . $e->getMessage());
             $this->telegramClient->sendMessage($telegramId, "Виникла помилка під час обробки повідомлення.");
-            return response()->json(['error' => $e->getMessage()], 200);
+            return response()->json(['error' => $e->getMessage()]);
         }
     }
 
-    protected function analyze($message, $telegramId): JsonResponse|array
+    protected function analyze(object $message, int $telegramId): JsonResponse|array
     {
         if (isset($message->text)) {
             return $this->openAiService->analyzeText($message->text, $telegramId);
@@ -117,10 +115,10 @@ class TelegramMessageHandler
             return $this->openAiService->analyzeText($text, $telegramId);
         }
 
-        return response()->json(['error' => 'Немає даних для аналізу'], 400);
+        return response()->json(['error' => 'No data to analyze'], 400);
     }
 
-    protected function checkSheetLink(User|null $user): void
+    protected function checkSheetLink(?User $user): void
     {
         if ($user && !$user->sheet_link) {
             $sheetLink = $this->googleService->createCustomSheet($user);

@@ -5,15 +5,11 @@ namespace App\Services\Telegram;
 use Telegram\Bot\Api;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Message as MessageObject;
-use Telegram\Bot\Objects\Update as UpdateObject;
 
 class TelegramClient
 {
-    protected $telegram;
-
-    public function __construct()
+    public function __construct(private readonly Api $telegram)
     {
-        $this->telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
     }
 
     public function sendMessage($chatId, $message, array $options = []): MessageObject|bool
@@ -29,15 +25,5 @@ class TelegramClient
             Log::error("Error sending Telegram message: " . $e->getMessage());
             return false;
         }
-    }
-
-    public function getUpdates(): array
-    {
-        return $this->telegram->getUpdates();
-    }
-
-    public function getWebhookUpdate(): UpdateObject
-    {
-        return $this->telegram->getWebhookUpdate();
     }
 }
