@@ -17,8 +17,9 @@ class TelegramBotController extends Controller
     public function webhook(): Response|JsonResponse
     {
         $update = $this->telegram->getWebhookUpdate();
+        $message = $update->message;
 
-        if ($message = $update->message) {
+        if (isset($message)) {
             $telegramId = $message->chat->id;
             $text = $message->text ?? null;
 
