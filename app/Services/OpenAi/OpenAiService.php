@@ -14,7 +14,6 @@ class OpenAiService
     {
     }
 
-
     public function analyzeText(string $text, int $telegramId): JsonResponse|array
     {
         try {
@@ -55,7 +54,7 @@ class OpenAiService
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('OpenAI response parsing error: ' . json_last_error_msg());
                 Log::error('OpenAI raw response: ' . $content);
-                return response()->json(['error' => 'Неправильний формат JSON у відповіді OpenAI'], 500);
+                return response()->json(['error' => 'Incorrect JSON format according to OpenAI'], 500);
             }
 
             $total = $result['total'];
@@ -65,7 +64,7 @@ class OpenAiService
             return compact('total', 'category', 'description');
         } catch (\Exception $e) {
             Log::error('OpenAI analysis error: ' . $e->getMessage());
-            return response()->json(['error' => 'Помилка при аналізі тексту: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Error parsing text: ' . $e->getMessage()], 500);
         }
     }
 
