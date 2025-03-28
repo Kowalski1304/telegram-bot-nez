@@ -44,7 +44,7 @@ A Laravel-based Telegram bot that helps users track their expenses by analyzing 
 
 ```bash
 git clone https://github.com/Kowalski1304/telegram-bot-nez.git
-cd expense-tracker-bot
+cd telegram-bot-nez
 ```
 
 2. **Install dependencies**
