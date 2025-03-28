@@ -1,6 +1,10 @@
 # Expense Tracker Telegram Bot
 
 A Laravel-based Telegram bot that helps users track their expenses by analyzing receipts, voice messages, and text descriptions. The bot automatically categorizes expenses and records them in a personalized Google Spreadsheet.
+<img width="1253" alt="image" src="https://github.com/user-attachments/assets/b20e5223-1039-4921-841c-7fde082f32a8" />
+<img width="835" alt="image" src="https://github.com/user-attachments/assets/86a61e26-6fae-45b3-b835-c459f9c827c8" />
+<img width="842" alt="image" src="https://github.com/user-attachments/assets/345448b8-e7ea-40ad-95fc-3a0f6c1d1c30" />
+<img width="848" alt="image" src="https://github.com/user-attachments/assets/bf6cb870-85b7-4120-900d-282720a6393b" />
 
 ## Features
 
